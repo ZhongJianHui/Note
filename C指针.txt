@@ -1,0 +1,269 @@
+在C语言中，数组参数是以引用形式进行传递的，也就是传址调用。而标量和常量是按值传递的、而数组名参数则
+具有传址调用的语义。
+常用printf格式码
+%d以十进制形式打印一个整型值
+%o以八进制形式打印一个整型值
+%x以十六进制形式打印一个整型值
+%g打印一个浮点值
+%c打印一个字符
+%s打印一个字符串
+\n换行
+常用scanf格式码
+%d读取一个整型值int
+%ld读取一个长整型值long
+%f读取一个实型值float
+%lf读取一个双精度实型值double
+%c读取一个字符char
+%s从输入中读取一个字符串char型数组
+
+整型家族
+	整型家族包括字符、短整型和长整型，它们都分为有符号和无符号两种版本
+	长整型至少应该和整型一样长，而整型至少应该和短整型一样长
+类型				最小范围
+char				0到127
+signed char 		-127到127
+unsigend char		0到255
+short int			-32767到32767
+unsigend short int  0到65535
+int					-32767到32767
+unsigend int 		0到65535
+long int			-2147483647到2147483647
+unsigend long int   0-4294967295
+
+char *message = "Hello world!";
+这条语句把message声明为一个指向字符的指针，并用字符串常量中第1个字符的地址对该指针进行初始化
+
+变量的缺省存储类型取决与它的声明位置。凡是在任何代码块之外声明的变量总是存储于静态内存中，也就是不属于
+堆栈的内存，这类变量称为静态变量。对于这类变量，你无法为它们指定其他存储类型。静态变量在程序运行之前创建，
+在程序的整个执行期间始终存在。
+在代码块内部声明的变量的缺省存储类型是自动的（automatic）。也就是说它存储于堆栈中，称为自动（auto）变量。
+函数的形式参数不能声明为静态，因为实参总是在堆栈中传递给函数，用于支持递归
+关键字register可以用于自动变量的声明，提示它们应该存储与机器的硬件寄存器而不是内存中，这类变量称为寄存器常量
+
+  static用于代码块内部变量声明时，static关键字用于修改标识符的链接属性，从external改为internal，但标识符的存储类型
+和作用域不受影响。用这种方式声明的函数或变量只能在声明它们的源文件中访问。
+  当它用于代码块内部的变量声明时，static关键字用于修改变量的存储类型，从自动变量修改为静态变量，但变量的链接
+属性和作用域不受影响。用这种方式声明的变量在程序执行之前创建，并在程序的整个执行期间一直存在，而不是
+每次在代码块开始执行是创建，在代码块执行完毕后销毁。
+
+else语句从属于最靠近它的不完整的if语句
+在while循环中可以使用break语句，用于永久终止循环。continue语句用于永久终止当前的那次循环。
+
+单目操作符
+~操作符对整型类的操作数进行求补操作，操作数中所有原先为1的位数变为0，所有原先为0的位变为1、
+&操作符产生它的操作数的地址。
+//
+int a, *b;
+...
+b = &a;
+&操作符取变量a的地址，并把它赋值给指针变量
+//
+*操作符是间接访问操作符，它与指针一起使用，用于访问指针所指向的值，在上面例子中的赋值操作完成之后，表达式b的值是
+变量a的地址，但表达式*b的值则是变量a的值
+sizeof操作符判断它的操作数的类型长度，以字节为单位表示。操作数既可以是个表达式，也可以是两边加上括号的类型名
+++ -- 操作符的结果不是被它们所修改的变量，而是变量值的拷贝
+//
+++a = 10;
+++a的结果是a值的拷贝，并不是变量本身，无法向一个值进行赋值
+//
+
+动态内存分配
+	当数组被声明时，必须在编译时知道它的长度。动态内存分配允许程序为一个长度在运行时才知道的数组分配内存空间。
+	malloc和calloc函数都用于动态分配一块内存，并返回一个指向该块内存的指针。malloc的参数就是需要分配的内存的字节数。和它
+不同的是，calloc的参数是你需要分配的元素个数和每个元素的长度。calloc函数在返回前吧内存初始化为零。而malloc函数返回时
+内存并未以任何方式进行初始化。调用realloc函数可以改变一块已经动态分配的内存的大小。增加内存块大小时有可能采取的方法是
+把原来内存块上的所有数据复制到一个新的、更大的内存快上。当一个动态分配的内存块不再使用时，应该调用free函数把它归还给
+可用内存池。内存被释放之后便不能再被访问。
+	如果请求的内存分配失败，malloc、calloc和realloc函数返回的将是一个NULL指针。
+
+/*
+** 插入到一个有序单链表。函数的参数是一个指向链表第一个节点的指针，以及一个需要插入的新值
+*/
+#include <stdlib.h>
+#include <stdio.h>
+#include "sll_node.h"
+
+#define	FALSE	0
+#define	TRUE	1
+
+int sll_insert (register Node **linkp, int new_value) {
+	register Node *current;
+	register Node *new;
+	
+	// 寻找正确的插入位置，方法是按序访问链表。直到到达一个其值大于或等于新值的节点
+	while ( ( current = *linkp) != NULL &&
+		current->value < new_value)
+		linkp = &current->link;
+	// 为新节点分配内存，并把新值存储到新节点中。
+	new = （Node *）malloc( sizeof(Node));
+	if ( new == NULL)
+		return FALSE;
+	new->value = new_value;
+	//在链表中插入新节点，并返回TRUE
+	new->link = current;
+	*linkp = new;
+	return TRUE;
+}
+
+// 把标准输入读取的文本行逐行复制到标准输出
+#include <stdio.h>
+#define MAX_LINE_LENGTH	1024 // 可以复制的最长行
+ void copylines(FILE *input, FILE *output) {
+	char buffer[MAX_LINE_LENGTH];
+	while(fgets(buffer, MAX_LINE_LENGTH, input) != NULL)
+		fputs(buffer, output);
+ }
+ 
+ /*
+ * 使用随机数在牌桌上洗牌，第二个参数指定牌的数字
+ */
+ #include <stdlib.h>
+ #incluee <time.h>
+ #define TURE 1
+ #define FALSE 0
+ 
+ void shuffle(int *deck, int n_cards) {
+	int i;
+	static int first_time = TRUE;
+	// 如果尚未初始化，用当天的当前时间作为随机数发生器
+	if(first_time) {
+		first_time = FALSE;
+		srand((unsigend int)time(NULL));
+	}
+	// 通过交换随机对的牌进行洗牌
+	for (i = n_cards - 1; i > 0; i -= 1) {
+		int where;
+		int temp;
+		
+		where = rand() % i;
+		temp = deck[where];
+		deck[where] = deck[i];
+		deck[i] = temp;
+	}
+ }
+
+/*
+** 一个用静态数组实现的队列
+*/
+#define QUEUE_SIZE 100 // 队列中元素的最大数量
+#define ARRAY_SIZE (QUEUE_SIZE + 1) // 数组的长度
+// 用于存储队列元素的数组和指向队列头和尾的指针
+static	QUEUE_TYPE	queue[ARRAY_SIZE];
+static  size_t front = 1;
+static	size_t rear = 0;
+
+void insert (QUEUE_TYPE value) {
+	assert(!is_full());
+	rear = (rear + 1) % ARRAY_SIZE;
+	queue[rear] = value;
+}
+void delete)(void) {
+	assert(!is_empty());
+	front = (front + 1) % ARRAY_SIZE;
+}
+QUEUE_TYPE first(void) {
+	assert(!is_empty());
+	return queue[front];
+}
+int is_empty(void) {
+	return (rear + 1) % ARRAY_SIZE = front;
+}
+int is_full(void) {
+	return (rear + 2) % ARRAY_SIZE == front;
+}
+
+堆栈帧是堆栈中的一个区域，函数在那里存储变量和其他值。
+
+// 便签。不能不需要记
+// 68000处理器有d0至d7操纵数据的寄存器.有a0至a7用于操纵地址的寄存器
+// 地址模型执行间接寻址和索引操作。这种组合工作类似数组的下标引用。帧指针。它指向堆栈帧内部的一个“引用”位置。
+// 堆栈帧的所有值都是通过这个引用位置再加上一个偏移量进行访问的
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
